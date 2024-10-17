@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'database_helper.dart';
 
 final dio = Dio();
 List<Book> bookList = [];
 List downloaded = []; //TODO TAKE DOWNLOADED BOOKS DATA FROM DATABASE
 
-void main() {
+void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+  await initDatabase();
 
   runApp(
     MaterialApp(
@@ -37,7 +39,6 @@ checkFavorite(int id) async {
   return false;
 }
 
-//TODO SAVE DOWNLOADED BOOKS IN SHARED PREFERENCES
 checkDownloaded(int id) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   List<String> downloaded = prefs.getStringList("downloaded") ?? [];
@@ -176,7 +177,11 @@ class _BookLibraryState extends State<BookLibrary>
   }
 
   addDownloaded(int id) async{
-    //TODO
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> downloaded = prefs.getStringList("downloaded") ?? [];
+
+    downloaded.add(id.toString());
+    prefs.setStringList("downloaded", downloaded);
   }
 
   Widget pageCard(String text, int innerIndex) {
@@ -288,22 +293,4 @@ class _BookLibraryState extends State<BookLibrary>
   }
 }
 
-class Book {
-  Book({
-    required this.id,
-    required this.title,
-    required this.author,
-    required this.coverUrl,
-    required this.downloadUrl,
-    required this.isFavorite,
-    required this.isDownloaded,
-  });
 
-  int id;
-  String title;
-  String author;
-  String coverUrl;
-  String downloadUrl;
-  bool isFavorite;
-  bool isDownloaded;
-}
