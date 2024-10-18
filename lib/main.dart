@@ -6,7 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vocsy_epub_viewer/epub_viewer.dart';
-import 'database_helper.dart';
+import 'storage_helper.dart';
 
 final dio = Dio();
 List<Book> bookList = [];
@@ -29,32 +29,6 @@ void main() async {
   );
 }
 
-checkFavorite(int id) async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  List<String> bookmarks = prefs.getStringList("bookmarks") ?? [];
-
-  for (var favItem in bookmarks) {
-    if (favItem == id.toString()) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-checkDownloaded(int id) async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  List<String> downloaded = prefs.getStringList("downloaded") ?? [];
-
-  for (var downloadedBook in downloaded) {
-    if (downloadedBook == id.toString()) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 Future getBooksFromApi() async {
   var apiRes = await dio.get("https://escribo.com/books.json");
   for (var item in apiRes.data) {
@@ -65,8 +39,8 @@ Future getBooksFromApi() async {
         author: item["author"],
         coverUrl: item["cover_url"],
         downloadUrl: item["download_url"],
-        isFavorite: await checkFavorite(item["id"]),
-        isDownloaded: await checkDownloaded(item["id"]),
+        isFavorite: await checkSavedData(item["id"], "bookmarks"),
+        isDownloaded: await checkSavedData(item["id"], "downloaded"),
       ),
     );
   }
@@ -173,32 +147,11 @@ class _BookLibraryState extends State<BookLibrary>
     return const Text("Favorites");
   }
 
-  addFavorite(int id, bool isFavorite) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> bookmarks = prefs.getStringList("bookmarks") ?? [];
-
-    if (isFavorite) {
-      bookmarks.add(id.toString());
-    } else {
-      bookmarks.remove(id.toString());
-    }
-
-    prefs.setStringList("bookmarks", bookmarks);
-  }
-
-  addDownloaded(int id) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> downloaded = prefs.getStringList("downloaded") ?? [];
-
-    downloaded.add(id.toString());
-    prefs.setStringList("downloaded", downloaded);
-  }
-
   Future downloadBookToDevice(String downloadUrl, int id) async {
     String path = await getBookPath(id);
     await dio.download(downloadUrl,
         path); //TODO
-    await addDownloaded(id);
+    await addData(id, "downloaded");
   }
 
   Future deleteBookFromDevice() async{
@@ -367,7 +320,7 @@ class _BookLibraryState extends State<BookLibrary>
               setState(() {
                 tmp.isFavorite = !tmp.isFavorite;
               });
-              await addFavorite(id, tmp.isFavorite);
+              await addData(id, "bookmarks", tmp.isFavorite);
             },
             padding: EdgeInsets.zero,
             icon: Icon(
