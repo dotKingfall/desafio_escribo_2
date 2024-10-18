@@ -1,6 +1,8 @@
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
+import 'main.dart';
 
 //FEATURE SHARED PREFERENCES====================================================
 addData(int id, String list, [var isFavorite]) async{
@@ -27,6 +29,23 @@ checkSavedData(int id, String list) async{
   }
 
   return false;
+}
+
+//FEATURE BOOK OPERATIONS=======================================================
+//Pegar path de onde o livro foi salvo e nome
+Future<String> getBookPath(int id) async {
+  var dir = await getApplicationDocumentsDirectory();
+  String path = "${dir.path}/$id.epub";
+
+  return path;
+}
+
+//Baixar livro para o dispositivo
+Future bookToDevice(String downloadUrl, int id) async {
+  String path = await getBookPath(id);
+
+  await dio.download(downloadUrl, path);
+  await addData(id, "downloaded");
 }
 
 //FEATURE SQFLITE DATABASE =====================================================
@@ -61,7 +80,7 @@ class Book {
   String downloadUrl;
   bool isFavorite;
   bool isDownloaded;
-  String? downloadLocation; //TODO MAYBE UNALIVE THIS
+  String? downloadLocation;
 
   Map<String, dynamic> mapBook() {
     return {

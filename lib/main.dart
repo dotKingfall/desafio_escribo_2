@@ -1,16 +1,11 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:desafio_tecnico_2/reader_screen.dart';
+import 'package:desafio_tecnico_2/main_widgets/book_card.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vocsy_epub_viewer/epub_viewer.dart';
 import 'storage_helper.dart';
 
-final dio = Dio();
+final dio = Dio(); //TODO CLOSE CLIENT
 List<Book> bookList = [];
-List downloaded = []; //TODO TAKE DOWNLOADED BOOKS DATA FROM DATABASE
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,13 +42,6 @@ Future getBooksFromApi() async {
   return apiRes.data;
 }
 
-Future<String> getBookPath(int id) async{
-  var dir = await getApplicationDocumentsDirectory();
-  String path = "${dir.path}/$id.epub";
-
-  return path;
-}
-
 //Não dá pra colocar o future direto no builder da lista porque senão ele vai
 //dar rebuild duas vezes. Não sei direito como funciona, mas é de experiência kk
 Future futureForListBuilder = getBooksFromApi();
@@ -84,6 +72,7 @@ class _BookLibraryState extends State<BookLibrary>
         backgroundColor: Colors.lightGreen,
       ),
       body: Stack(
+        //TODO SEE THAT
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 50.0, left: 10.0, right: 10.0),
@@ -115,8 +104,9 @@ class _BookLibraryState extends State<BookLibrary>
           ),
           Row(
             children: [
-              pageCard("Livros", 0),
-              pageCard("Favoritos", 1),
+              pageNavigator("Livros", 0),
+              pageNavigator("Favoritos", 1),
+              pageNavigator("Offline", 2)
             ],
           ),
         ],
@@ -124,41 +114,7 @@ class _BookLibraryState extends State<BookLibrary>
     );
   }
 
-  showBooks() {
-    return Container(
-      padding: const EdgeInsets.only(bottom: 10.0),
-      child: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 150.0,
-          childAspectRatio: 1 / 2.25,
-        ),
-        shrinkWrap: true,
-        itemCount: bookList.length,
-        itemBuilder: (context, index) {
-          var tmp = bookList[index];
-          return bookItem(tmp.id, index, tmp.coverUrl, tmp.title, tmp.author,
-              tmp.downloadUrl, tmp.isFavorite, tmp.isDownloaded, context);
-        },
-      ),
-    );
-  }
-
-  showFavorites() {
-    return const Text("Favorites");
-  }
-
-  Future downloadBookToDevice(String downloadUrl, int id) async {
-    String path = await getBookPath(id);
-    await dio.download(downloadUrl,
-        path); //TODO
-    await addData(id, "downloaded");
-  }
-
-  Future deleteBookFromDevice() async{
-    //
-  } //TODO
-
-  Widget pageCard(String text, int innerIndex) {
+  Widget pageNavigator(String text, int innerIndex) {
     return Container(
       margin: const EdgeInsets.all(3.0),
       padding: const EdgeInsets.all(5.0),
@@ -177,160 +133,39 @@ class _BookLibraryState extends State<BookLibrary>
       ),
     );
   }
+}
 
-  Widget askToDownload(String url, int id, index, BuildContext context) {
-    return AlertDialog(
-      title: const Text("Baixar livro"),
-      content: const SingleChildScrollView(
-        child: Text("Antes que possa ler o livro, é necessário baixá-lo"),
+showBooks() {
+  return Container(
+    padding: const EdgeInsets.only(bottom: 10.0),
+    child: GridView.builder(
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 150.0,
+        childAspectRatio: 1 / 2.25,
       ),
-      actions: [
-        TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text("Cancelar")),
-        TextButton(
-            onPressed: () async {
-              await downloadBookToDevice(url, id);
-              bookList[index].isDownloaded = true; //TODO
-              if (context.mounted) {
-                Navigator.of(context).pop();
-              }
-            },
-            child: const Text("Baixar")), //TODO
-      ],
-    );
-  }
+      shrinkWrap: true,
+      itemCount: bookList.length,
+      itemBuilder: (context, index) {
+        var tmp = bookList[index];
+        return BookCard(
+            icId: tmp.id,
+            icIndex: index,
+            icTitle: tmp.title,
+            icAuthor: tmp.author,
+            icCoverUrl: tmp.coverUrl,
+            icDownloadUrl: tmp.downloadUrl,
+            icIsFavorite: tmp.isFavorite,
+            icIsDownloaded: tmp.isDownloaded,
+            icInnerContext: context);
+      },
+    ),
+  );
+}
 
-  Widget askToRemove(String url, int id, BuildContext context) {
-    return AlertDialog(
-      title: const Text("Excluir livro"),
-      content: const SingleChildScrollView(
-        child: Text("Deseja excluir o livro baixado?"),
-      ),
-      actions: [
-        TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text("Cancelar")),
-        TextButton(
-            onPressed: () async {}, //TODO
-            child: const Text("Excluir")),
-      ],
-    );
-  }
+showFavorites() {
+  return const Text("Favorites"); //TODO MAKE THAT
+}
 
-  Widget bookItem(int id, index, String cover, title, author, dUrl,
-      bool favorite, downloaded, BuildContext context) {
-    return Stack(
-      children: [
-        Card(
-          child: InkWell(
-            onTap: () async {
-              if (!downloaded) {
-                return showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      bookList[index].isDownloaded = true;
-                      return askToDownload(dUrl, id, index, context);
-                    });
-              } else {
-                VocsyEpub.setConfig(
-                  themeColor: Theme.of(context).primaryColor,
-                  identifier: id.toString(),
-                  scrollDirection: EpubScrollDirection.VERTICAL,
-                  enableTts: true,
-                  nightMode: false,
-                );
-
-                VocsyEpub.locatorStream.listen((locator) {
-                  print('LOCATOR: $locator'); //TODO REMOVE
-                });
-
-                String test = await getBookPath(id); //TODO
-                print("TEST IS $test");
-
-                VocsyEpub.open(test);
-              }
-            },
-            onLongPress: () {}, //TODO EXCLUIR DOWNLOAD
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Container(
-                  margin: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 2.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10.0),
-                    child: CachedNetworkImage(
-                      imageUrl: cover,
-                      imageBuilder: (context, imageProvider) => Container(
-                        height: 150,
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: imageProvider,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      placeholder: (context, url) => const Center(
-                        child: SizedBox(
-                          height: 25,
-                          width: 25,
-                          child: CircularProgressIndicator(
-                            color: Colors.lightGreen,
-                          ),
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => const Icon(
-                        Icons.highlight_remove,
-                        color: Colors.lightGreen,
-                      ),
-                    ),
-                  ),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                    ),
-                    Text(
-                      author,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-        Positioned(
-          top: 0,
-          right: -2,
-          child: IconButton(
-            onPressed: () async {
-              var tmp = bookList[index];
-              setState(() {
-                tmp.isFavorite = !tmp.isFavorite;
-              });
-              await addData(id, "bookmarks", tmp.isFavorite);
-            },
-            padding: EdgeInsets.zero,
-            icon: Icon(
-              Icons.bookmark,
-              color: bookList[index].isFavorite ? Colors.redAccent : null,
-              size: 29,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+showAvailableOffline(){
+  return const Text("Offline"); //TODO MAKE THAT
 }
