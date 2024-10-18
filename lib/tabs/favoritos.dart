@@ -64,6 +64,6 @@ showFav() {
     return const Center(child: Text("Nenhum favorito adicionado!"),);
   }
   else{
-    return Text("TODO HERE HEHE");
+    return const Center(child: Text("Carregando..."),);
   }
 }
