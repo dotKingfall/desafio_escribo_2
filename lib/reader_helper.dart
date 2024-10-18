@@ -45,5 +45,6 @@ openReader(BuildContext context, int id) async{
     debugPrint('LOCATOR: $locator');
   });
 
+  //VocsyEpub.open(path);
   VocsyEpub.open(path);
 }

@@ -99,11 +99,12 @@ class _BookCardState extends State<BookCard> {
                           ),
                         ),
                       ),
-                      placeholder: (context, url) => const Center(
-                        child: SizedBox(
+                      placeholder: (context, url) => Center(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(vertical: 5.0),
                           height: 25,
                           width: 25,
-                          child: CircularProgressIndicator(
+                          child: const CircularProgressIndicator(
                             color: Colors.lightGreen,
                           ),
                         ),

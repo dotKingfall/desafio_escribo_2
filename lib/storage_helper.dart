@@ -31,7 +31,7 @@ checkSavedData(int id, String list) async{
   return false;
 }
 
-//FEATURE BOOK OPERATIONS=======================================================
+//FEATURE BOOK MISCELLANEOUS====================================================
 //Pegar path de onde o livro foi salvo e nome
 Future<String> getBookPath(int id) async {
   var dir = await getApplicationDocumentsDirectory();

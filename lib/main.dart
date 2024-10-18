@@ -4,11 +4,16 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import 'storage_helper.dart';
 
-final dio = Dio(BaseOptions(
+final dio = Dio(
+  BaseOptions(
     connectTimeout: const Duration(seconds: 60),
     receiveTimeout: const Duration(seconds: 60),
-)); //TODO CLOSE CLIENT
+  ),
+);
 List<Book> bookList = [];
+Color beautifulGreen = const Color(0XFF768a76);
+Color darkerBeautiful = const Color(0XFF465246);
+Color pleasantWhite = const Color(0XFFF9F6EE);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,7 +24,7 @@ void main() async {
       title: "Desafio escribo 2",
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightGreen),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green, dynamicSchemeVariant: DynamicSchemeVariant.fruitSalad),
         textTheme: GoogleFonts.merriweatherTextTheme(),
       ),
       home: const BookLibrary(),
@@ -28,7 +33,7 @@ void main() async {
 }
 
 Future getBooksFromApi() async {
-  try{
+  try {
     var apiRes = await dio.get("https://escribo.com/books.json");
     for (var item in apiRes.data) {
       var thisBook = Book(
@@ -45,8 +50,7 @@ Future getBooksFromApi() async {
       await addBook(thisBook);
     }
     return apiRes.data;
-  }
-  on DioException catch(e){
+  } on DioException catch (e) {
     throw Exception(e.message);
   }
 }
@@ -76,14 +80,14 @@ class _BookLibraryState extends State<BookLibrary>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("E-BOOK READER"),
+        title: Text("E-BOOK READER", style: barsStyle,),
         centerTitle: true,
-        backgroundColor: Colors.lightGreen,
+        backgroundColor: beautifulGreen,
       ),
       body: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: 50.0, left: 10.0, right: 10.0),
+            padding: const EdgeInsets.only(top: 45.0, left: 10.0, right: 10.0),
             child: TabBarView(
               physics: const NeverScrollableScrollPhysics(),
               controller: tabController,
@@ -94,34 +98,40 @@ class _BookLibraryState extends State<BookLibrary>
               ],
             ),
           ),
-          Row(
-            children: [
-              pageNavigator("Livros", 0),
-              pageNavigator("Favoritos", 1),
-              pageNavigator("Offline", 2)
-            ],
-          ),
+    Padding(
+      padding: const EdgeInsets.only(top: 5.0),
+      child: Row(
+        children: [
+          pageNavigator("Livros", 0),
+          pageNavigator("Favoritos", 1),
+          pageNavigator("Offline", 2)
+        ],
+      ),
+    ),
         ],
       ),
     );
   }
 
+  //TODO WORKING
   Widget pageNavigator(String text, int innerIndex) {
     return Container(
       margin: const EdgeInsets.all(3.0),
       padding: const EdgeInsets.all(5.0),
       decoration: BoxDecoration(
           color: tabController.index == innerIndex
-              ? Colors.lightGreen[800]
-              : Colors.lightGreen,
-          borderRadius: BorderRadius.circular(10.0)),
+              ? darkerBeautiful
+              : beautifulGreen,
+          borderRadius: BorderRadius.circular(10.0),
+        border: Border.all(color: darkerBeautiful, width: 2.5),
+      ),
       child: InkWell(
         onTap: () {
           setState(() {
             tabController.animateTo(innerIndex);
           });
         },
-        child: Text(text),
+        child: Text(text, style: barsStyle,),
       ),
     );
   }
@@ -156,12 +166,11 @@ showBooks() {
             },
           ),
         );
-      } else if(snapshot.hasError){
+      } else if (snapshot.hasError) {
         return Center(
           child: Text("${snapshot.error}"),
         );
-      }
-      else {
+      } else {
         return const Center(
           child: SizedBox(
             height: 50,
@@ -183,3 +192,8 @@ showFavorites() {
 showAvailableOffline() {
   return const Text("Offline"); //TODO MAKE THAT
 }
+
+TextStyle barsStyle = GoogleFonts.ubuntu(
+  color: pleasantWhite,
+  fontWeight: FontWeight.w600,
+);
