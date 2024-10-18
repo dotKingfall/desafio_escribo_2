@@ -4,13 +4,15 @@ import '../main_widgets/book_card.dart';
 import '../storage_helper.dart';
 import 'livros.dart';
 
-showFav() {
-  if(bookList.isNotEmpty){
-    List favoriteBooks = [];
-    for(int i = 0; i < bookList.length; i++){
-      if(bookList[i].isFavorite){favoriteBooks.add(bookList[i]);}
-    }
+List<Book> favoriteBooks = [];
 
+showFav() {
+  for(Book book in bookList){
+    if(book.isFavorite && !favoriteBooks.contains(book)){favoriteBooks.add(book);}
+  }
+  favoriteBooks.removeWhere((book) => !book.isFavorite);
+
+  if(bookList.isNotEmpty && favoriteBooks.isNotEmpty){
     return FutureBuilder(
       future: futureForGridBuilder,
       builder: (context, snapshot) {
@@ -28,7 +30,7 @@ showFav() {
                 var tmp = favoriteBooks[index];
                 return BookCard(
                     icId: tmp.id,
-                    icIndex: index,
+                    icIndex: bookList.indexOf(tmp),
                     icTitle: tmp.title,
                     icAuthor: tmp.author,
                     icCoverUrl: tmp.coverUrl,
@@ -39,7 +41,8 @@ showFav() {
               },
             ),
           );
-        } else if (snapshot.hasError) {
+        }
+        else if (snapshot.hasError) {
           return Center(
             child: Text("${snapshot.error}"),
           );
@@ -56,6 +59,9 @@ showFav() {
         }
       },
     );
+  }
+  else if(bookList.isNotEmpty && favoriteBooks.isEmpty){
+    return const Center(child: Text("Nenhum favorito adicionado!"),);
   }
   else{
     return Text("TODO HERE HEHE");

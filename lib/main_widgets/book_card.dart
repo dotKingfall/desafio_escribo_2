@@ -134,15 +134,24 @@ class _BookCardState extends State<BookCard> {
           child: IconButton(
             onPressed: () async {
               var tmp = bookList[index];
-              await addData(id, "bookmarks", tmp.isFavorite);
-              setState(() {
-                tmp.isFavorite = !tmp.isFavorite;
-              });
+
+              if(tmp.isFavorite){
+                await removeData(id, index, "bookmarks");
+                tmp.isFavorite = false;
+                isFavorite = false;
+              }
+              else{
+                await addData(id, "bookmarks");
+                tmp.isFavorite = true;
+                isFavorite = true;
+              }
+
+              setState(() {});
             },
             padding: EdgeInsets.zero,
             icon: Icon(
               Icons.bookmark,
-              color: bookList[index].isFavorite ? Colors.redAccent : null,
+              color: isFavorite ? Colors.redAccent : null,
               size: 29,
             ),
           ),

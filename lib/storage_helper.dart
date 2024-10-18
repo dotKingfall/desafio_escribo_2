@@ -1,3 +1,4 @@
+import 'package:desafio_tecnico_2/tabs/favoritos.dart';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -6,16 +7,21 @@ import 'package:sqflite/sqflite.dart';
 import 'main.dart';
 
 //FEATURE SHARED PREFERENCES====================================================
-addData(int id, String list, [bool isFavorite = false]) async{
+addData(int id, String list) async{
   SharedPreferences prefs = await SharedPreferences.getInstance();
   List<String> dataList = prefs.getStringList(list) ?? [];
 
-  if(isFavorite){
-    dataList.remove(id.toString());
-  }else{
-    dataList.add(id.toString());
-  }
+  dataList.add(id.toString());
+  prefs.setStringList(list, dataList);
+}
 
+//Remover favoritos
+removeData(int id, index, String list) async{
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  List<String> dataList = prefs.getStringList(list) ?? [];
+
+  dataList.remove(id.toString());
+  bookList[index].isFavorite = false;
   prefs.setStringList(list, dataList);
 }
 
@@ -61,7 +67,6 @@ Future bookToDevice(String downloadUrl, int id, index) async {
   bookList[index].isDownloaded = true;
 }
 
-//TODO WORKING
 //Pegar livros da API, caso database esteja vazio
 Future getBooksFromApi() async {
   try {
@@ -110,7 +115,6 @@ Future addBook(Book book) async {
   );
 }
 
-//TODO WORKING
 //Pegar todos os livros salvos no banco de dados
 Future getBooksFromDatabase() async{
   final db = await database;
