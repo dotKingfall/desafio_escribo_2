@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
 import '../main_widgets/book_card.dart';
+import '../storage_helper.dart';
+
+//Não dá pra colocar o future direto no builder da lista porque senão ele vai
+//dar rebuild duas vezes. Não sei direito como funciona, mas é de experiência kk
+Future futureForGridBuilder = getBooksFromApi();
 
 showBooks() {
   return FutureBuilder(
-    future: futureForListBuilder,
+    future: futureForGridBuilder,
     builder: (context, snapshot) {
       if (snapshot.hasData) {
         return Container(

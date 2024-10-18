@@ -1,4 +1,6 @@
-import 'package:desafio_tecnico_2/tabs/export_all.dart';
+import 'package:desafio_tecnico_2/tabs/favoritos.dart';
+import 'package:desafio_tecnico_2/tabs/livros.dart';
+import 'package:desafio_tecnico_2/tabs/offline.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
@@ -11,6 +13,8 @@ final dio = Dio(
   ),
 );
 List<Book> bookList = [];
+List<Book> databaseList = [];
+
 Color beautifulGreen = const Color(0XFF768a76);
 Color darkerBeautiful = const Color(0XFF465246);
 Color pleasantWhite = const Color(0XFFF9F6EE);
@@ -24,40 +28,15 @@ void main() async {
       title: "Desafio escribo 2",
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green, dynamicSchemeVariant: DynamicSchemeVariant.fruitSalad),
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.green,
+            dynamicSchemeVariant: DynamicSchemeVariant.fruitSalad),
         textTheme: GoogleFonts.merriweatherTextTheme(),
       ),
       home: const BookLibrary(),
     ),
   );
 }
-
-Future getBooksFromApi() async {
-  try {
-    var apiRes = await dio.get("https://escribo.com/books.json");
-    for (var item in apiRes.data) {
-      var thisBook = Book(
-        id: item["id"],
-        title: item["title"],
-        author: item["author"],
-        coverUrl: item["cover_url"],
-        downloadUrl: item["download_url"],
-        isFavorite: await checkSavedData(item["id"], "bookmarks"),
-        isDownloaded: await checkSavedData(item["id"], "downloaded"),
-      );
-
-      bookList.add(thisBook);
-      await addBook(thisBook);
-    }
-    return apiRes.data;
-  } on DioException catch (e) {
-    throw Exception(e.message);
-  }
-}
-
-//Não dá pra colocar o future direto no builder da lista porque senão ele vai
-//dar rebuild duas vezes. Não sei direito como funciona, mas é de experiência kk
-Future futureForListBuilder = getBooksFromApi();
 
 class BookLibrary extends StatefulWidget {
   const BookLibrary({super.key});
@@ -72,7 +51,10 @@ class _BookLibraryState extends State<BookLibrary>
 
   @override
   void initState() {
-    tabController = TabController(length: 3, vsync: this);
+    tabController = TabController(
+      length: 3,
+      vsync: this,
+    );
     super.initState();
   }
 
@@ -80,7 +62,10 @@ class _BookLibraryState extends State<BookLibrary>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("E-BOOK READER", style: barsStyle,),
+        title: Text(
+          "E-BOOK READER",
+          style: barsStyle,
+        ),
         centerTitle: true,
         backgroundColor: beautifulGreen,
       ),
@@ -93,21 +78,21 @@ class _BookLibraryState extends State<BookLibrary>
               controller: tabController,
               children: [
                 showBooks(),
-                showFavorites(),
-                showAvailableOffline(),
+                showFav(),
+                showOffline(),
               ],
             ),
           ),
-    Padding(
-      padding: const EdgeInsets.only(top: 5.0),
-      child: Row(
-        children: [
-          pageNavigator("Livros", 0),
-          pageNavigator("Favoritos", 1),
-          pageNavigator("Offline", 2)
-        ],
-      ),
-    ),
+          Padding(
+            padding: const EdgeInsets.only(top: 5.0),
+            child: Row(
+              children: [
+                pageNavigator("Livros", 0),
+                pageNavigator("Favoritos", 1),
+                pageNavigator("Offline", 2)
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -118,10 +103,10 @@ class _BookLibraryState extends State<BookLibrary>
       margin: const EdgeInsets.all(3.0),
       padding: const EdgeInsets.all(5.0),
       decoration: BoxDecoration(
-          color: tabController.index == innerIndex
-              ? darkerBeautiful
-              : beautifulGreen,
-          borderRadius: BorderRadius.circular(10.0),
+        color: tabController.index == innerIndex
+            ? darkerBeautiful
+            : beautifulGreen,
+        borderRadius: BorderRadius.circular(10.0),
         border: Border.all(color: darkerBeautiful, width: 2.5),
       ),
       child: InkWell(
@@ -130,7 +115,10 @@ class _BookLibraryState extends State<BookLibrary>
             tabController.animateTo(innerIndex);
           });
         },
-        child: Text(text, style: barsStyle,),
+        child: Text(
+          text,
+          style: barsStyle,
+        ),
       ),
     );
   }

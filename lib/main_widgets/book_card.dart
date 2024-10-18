@@ -35,6 +35,7 @@ class BookCard extends StatefulWidget {
 }
 
 class _BookCardState extends State<BookCard> {
+  late List<Book> importantList;
   late int id;
   late int index;
   late String title;
@@ -69,7 +70,7 @@ class _BookCardState extends State<BookCard> {
             onTap: () async {
               if (!bookList[index].isDownloaded) {
                 notifyDownload(context, downloadUrl, id, index);
-                await bookToDevice(downloadUrl, id).then((value) {
+                await bookToDevice(downloadUrl, id, index).then((value) {
                   bookList[index].isDownloaded = true;
                   if (context.mounted) {
                     Navigator.of(context).pop();
@@ -127,7 +128,7 @@ class _BookCardState extends State<BookCard> {
             ),
           ),
         ),
-        Positioned( //TODO ANALYZE
+        Positioned(
           top: 0,
           right: -2,
           child: IconButton(
