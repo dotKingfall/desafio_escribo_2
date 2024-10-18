@@ -12,6 +12,7 @@ initDatabase() async {
   }, version: 1);
 }
 
+//TODO USE THIS
 Future addBook(Book book) async {
   final db = await database;
 
@@ -40,6 +41,7 @@ class Book {
   String downloadUrl;
   bool isFavorite;
   bool isDownloaded;
+  String? downloadLocation;
 
   Map<String, dynamic> mapBook() {
     return {
@@ -48,8 +50,7 @@ class Book {
       "author": author,
       "cover_url": coverUrl,
       "download_url": downloadUrl,
-      "is_favorite": isFavorite,
-      "is_downloaded": isDownloaded,
+      "download_location": downloadLocation,
     };
   }
 }
