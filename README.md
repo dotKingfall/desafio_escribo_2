@@ -7,7 +7,8 @@ utilizar um emulador ou celular pela IDE para instalar o aplicativo
 
 OU
 
-Instalar o apk "testeescbrio2.apk" e tá tudo certo kkkk
+acessar https://drive.google.com/file/d/1v3OI-rb_WVsgq1keC5-oqvNmEGx6CkUG/view?usp=drive_link
+Instalar o apk "app-release.apk" e tá tudo certo kkkk
 
 Existem 3 abas no aplicativo: Livros, Favoritos e Offline.
 A aba de livros recebe os dados diretamente da API, e exibe mensagem de erro caso haja falha na conexão.
