@@ -104,14 +104,14 @@ class _BookCardState extends State<BookCard> {
                           margin: const EdgeInsets.symmetric(vertical: 5.0),
                           height: 25,
                           width: 25,
-                          child: const CircularProgressIndicator(
-                            color: Colors.lightGreen,
+                          child: CircularProgressIndicator(
+                            color: beautifulGreen,
                           ),
                         ),
                       ),
-                      errorWidget: (context, url, error) => const Icon(
+                      errorWidget: (context, url, error) => Icon(
                         Icons.highlight_remove,
-                        color: Colors.lightGreen,
+                        color: beautifulGreen,
                       ),
                     ),
                   ),
@@ -127,16 +127,16 @@ class _BookCardState extends State<BookCard> {
             ),
           ),
         ),
-        Positioned(
+        Positioned( //TODO ANALYZE
           top: 0,
           right: -2,
           child: IconButton(
             onPressed: () async {
               var tmp = bookList[index];
+              await addData(id, "bookmarks", tmp.isFavorite);
               setState(() {
                 tmp.isFavorite = !tmp.isFavorite;
               });
-              await addData(id, "bookmarks", tmp.isFavorite);
             },
             padding: EdgeInsets.zero,
             icon: Icon(

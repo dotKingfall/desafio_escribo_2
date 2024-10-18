@@ -1,3 +1,4 @@
+import 'package:desafio_tecnico_2/main.dart';
 import 'package:desafio_tecnico_2/storage_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:vocsy_epub_viewer/epub_viewer.dart';
@@ -34,7 +35,7 @@ openReader(BuildContext context, int id) async{
   String path = await getBookPath(id);
 
   VocsyEpub.setConfig(
-    themeColor: Colors.lightGreen,
+    themeColor: beautifulGreen,
     identifier: id.toString(),
     scrollDirection: EpubScrollDirection.VERTICAL,
     enableTts: true,

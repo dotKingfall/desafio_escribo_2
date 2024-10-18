@@ -1,4 +1,4 @@
-import 'package:desafio_tecnico_2/main_widgets/book_card.dart';
+import 'package:desafio_tecnico_2/tabs/export_all.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
@@ -113,7 +113,6 @@ class _BookLibraryState extends State<BookLibrary>
     );
   }
 
-  //TODO WORKING
   Widget pageNavigator(String text, int innerIndex) {
     return Container(
       margin: const EdgeInsets.all(3.0),
@@ -135,62 +134,6 @@ class _BookLibraryState extends State<BookLibrary>
       ),
     );
   }
-}
-
-showBooks() {
-  return FutureBuilder(
-    future: futureForListBuilder,
-    builder: (context, snapshot) {
-      if (snapshot.hasData) {
-        return Container(
-          padding: const EdgeInsets.only(bottom: 10.0),
-          child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 150.0,
-              childAspectRatio: 1 / 2.25,
-            ),
-            shrinkWrap: true,
-            itemCount: bookList.length,
-            itemBuilder: (context, index) {
-              var tmp = bookList[index];
-              return BookCard(
-                  icId: tmp.id,
-                  icIndex: index,
-                  icTitle: tmp.title,
-                  icAuthor: tmp.author,
-                  icCoverUrl: tmp.coverUrl,
-                  icDownloadUrl: tmp.downloadUrl,
-                  icIsFavorite: tmp.isFavorite,
-                  icIsDownloaded: tmp.isDownloaded,
-                  icInnerContext: context);
-            },
-          ),
-        );
-      } else if (snapshot.hasError) {
-        return Center(
-          child: Text("${snapshot.error}"),
-        );
-      } else {
-        return const Center(
-          child: SizedBox(
-            height: 50,
-            width: 50,
-            child: CircularProgressIndicator(
-              color: Colors.lightGreen,
-            ),
-          ),
-        );
-      }
-    },
-  );
-}
-
-showFavorites() {
-  return const Text("Favorites"); //TODO MAKE THAT
-}
-
-showAvailableOffline() {
-  return const Text("Offline"); //TODO MAKE THAT
 }
 
 TextStyle barsStyle = GoogleFonts.ubuntu(

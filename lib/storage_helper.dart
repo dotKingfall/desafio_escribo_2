@@ -5,15 +5,16 @@ import 'package:sqflite/sqflite.dart';
 import 'main.dart';
 
 //FEATURE SHARED PREFERENCES====================================================
-addData(int id, String list, [var isFavorite]) async{
+addData(int id, String list, [bool isFavorite = false]) async{
   SharedPreferences prefs = await SharedPreferences.getInstance();
   List<String> dataList = prefs.getStringList(list) ?? [];
 
-  if (isFavorite == true) {
+  if(isFavorite){
     dataList.remove(id.toString());
+  }else{
+    dataList.add(id.toString());
   }
 
-  dataList.add(id.toString());
   prefs.setStringList(list, dataList);
 }
 
