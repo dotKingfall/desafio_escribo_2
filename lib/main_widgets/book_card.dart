@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:desafio_tecnico_2/reader_helper.dart';
 import 'package:desafio_tecnico_2/main.dart';
-
 import '../storage_helper.dart';
 
 class BookCard extends StatefulWidget {
@@ -69,7 +68,15 @@ class _BookCardState extends State<BookCard> {
           child: InkWell(
             onTap: () async {
               if (!bookList[index].isDownloaded) {
-                askToDownload(context, downloadUrl, id, index);
+                notifyDownload(context, downloadUrl, id, index);
+                await bookToDevice(downloadUrl, id).then((value) {
+                  bookList[index].isDownloaded = true;
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+                    openReader(context, id);
+                  }
+                });
+
               } else {
                 openReader(context, id);
               }

@@ -51,7 +51,7 @@ Future bookToDevice(String downloadUrl, int id) async {
 //FEATURE SQFLITE DATABASE =====================================================
 late Future<Database> database;
 String tableCreation =
-    """CREATE TABLE IF NOT EXISTS books(id INTEGER PRIMARY KEY, title TEXT, author TEXT, cover_url TEXT, download_url TEXT, is_favorite INTEGER, is_downloaded INTEGER)""";
+    """CREATE TABLE IF NOT EXISTS books(id INTEGER PRIMARY KEY, title TEXT, author TEXT, cover_url TEXT, download_url TEXT, is_favorite INTEGER, is_downloaded INTEGER, download_location TEXT)""";
 
 //Iniciar banco de dados
 initDatabase() async {
@@ -59,6 +59,23 @@ initDatabase() async {
       onCreate: (db, version) {
     return db.execute(tableCreation);
   }, version: 1);
+}
+
+//Adicionar livro à tabela no armazenamento local
+Future addBook(Book book) async {
+  final db = await database;
+
+  await db.insert(
+    "books",
+    book.mapBook(),
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
+}
+
+//Pegar todos os livros salvos no banco de dados
+Future retrieveBooks() async{
+  final db = await database;
+  //TODO
 }
 
 //Classe principal que armazena as informações recebidas de https://escribo.com/books.json
@@ -93,15 +110,3 @@ class Book {
     };
   }
 }
-
-/*
-* //TODO USE THIS
-Future addBook(Book book) async {
-  final db = await database;
-
-  await db.insert(
-    "books",
-    book.mapBook(),
-    conflictAlgorithm: ConflictAlgorithm.replace,
-  );
-}*/

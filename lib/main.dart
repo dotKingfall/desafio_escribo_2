@@ -27,17 +27,18 @@ void main() async {
 Future getBooksFromApi() async {
   var apiRes = await dio.get("https://escribo.com/books.json");
   for (var item in apiRes.data) {
-    bookList.add(
-      Book(
-        id: item["id"],
-        title: item["title"],
-        author: item["author"],
-        coverUrl: item["cover_url"],
-        downloadUrl: item["download_url"],
-        isFavorite: await checkSavedData(item["id"], "bookmarks"),
-        isDownloaded: await checkSavedData(item["id"], "downloaded"),
-      ),
+    var thisBook = Book(
+      id: item["id"],
+      title: item["title"],
+      author: item["author"],
+      coverUrl: item["cover_url"],
+      downloadUrl: item["download_url"],
+      isFavorite: await checkSavedData(item["id"], "bookmarks"),
+      isDownloaded: await checkSavedData(item["id"], "downloaded"),
     );
+
+    bookList.add(thisBook);
+    await addBook(thisBook);
   }
   return apiRes.data;
 }
@@ -59,7 +60,7 @@ class _BookLibraryState extends State<BookLibrary>
 
   @override
   void initState() {
-    tabController = TabController(length: 2, vsync: this);
+    tabController = TabController(length: 3, vsync: this);
     super.initState();
   }
 
@@ -72,7 +73,6 @@ class _BookLibraryState extends State<BookLibrary>
         backgroundColor: Colors.lightGreen,
       ),
       body: Stack(
-        //TODO SEE THAT
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 50.0, left: 10.0, right: 10.0),
@@ -86,6 +86,7 @@ class _BookLibraryState extends State<BookLibrary>
                     children: [
                       showBooks(),
                       showFavorites(),
+                      showAvailableOffline(),
                     ],
                   );
                 } else {
@@ -166,6 +167,6 @@ showFavorites() {
   return const Text("Favorites"); //TODO MAKE THAT
 }
 
-showAvailableOffline(){
+showAvailableOffline() {
   return const Text("Offline"); //TODO MAKE THAT
 }

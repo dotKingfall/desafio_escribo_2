@@ -1,38 +1,30 @@
 import 'package:desafio_tecnico_2/storage_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:vocsy_epub_viewer/epub_viewer.dart';
-import 'main.dart';
 
 //Alert dialog pedindo autorização para baixar lviro no dispositivo.
-Future askToDownload(BuildContext context, String url, int id, index) {
+Future notifyDownload(BuildContext context, String url, int id, index) async{
   return showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Baixar livro"),
-          content: const SingleChildScrollView(
-            child: Text("Antes que possa ler o livro, é necessário baixá-lo"),
+        return const Dialog(
+          child: SizedBox(
+            height: 100,
+            child: Padding(
+              padding: EdgeInsets.all(10.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Text("Seu livro está baixando! :)"),
+                  SizedBox(
+                    height: 10,
+                    width: 100,
+                    child: LinearProgressIndicator(),
+                  ),
+                ],
+              ),
+            ),
           ),
-          actions: [
-            TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text("Cancelar")),
-
-            TextButton(
-                onPressed: () async {
-                  await bookToDevice(url, id).then((value) {
-                    bookList[index].isDownloaded = true;
-                  });
-
-                  if (context.mounted) {
-                    Navigator.of(context).pop();
-                    openReader(context, id);
-                  }
-                },
-                child: const Text("Baixar")),
-          ],
         );
       });
 }
