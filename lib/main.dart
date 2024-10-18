@@ -4,7 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import 'storage_helper.dart';
 
-final dio = Dio(); //TODO CLOSE CLIENT
+final dio = Dio(BaseOptions(
+    connectTimeout: const Duration(seconds: 60),
+    receiveTimeout: const Duration(seconds: 60),
+)); //TODO CLOSE CLIENT
 List<Book> bookList = [];
 
 void main() async {
@@ -25,22 +28,27 @@ void main() async {
 }
 
 Future getBooksFromApi() async {
-  var apiRes = await dio.get("https://escribo.com/books.json");
-  for (var item in apiRes.data) {
-    var thisBook = Book(
-      id: item["id"],
-      title: item["title"],
-      author: item["author"],
-      coverUrl: item["cover_url"],
-      downloadUrl: item["download_url"],
-      isFavorite: await checkSavedData(item["id"], "bookmarks"),
-      isDownloaded: await checkSavedData(item["id"], "downloaded"),
-    );
+  try{
+    var apiRes = await dio.get("https://escribo.com/books.json");
+    for (var item in apiRes.data) {
+      var thisBook = Book(
+        id: item["id"],
+        title: item["title"],
+        author: item["author"],
+        coverUrl: item["cover_url"],
+        downloadUrl: item["download_url"],
+        isFavorite: await checkSavedData(item["id"], "bookmarks"),
+        isDownloaded: await checkSavedData(item["id"], "downloaded"),
+      );
 
-    bookList.add(thisBook);
-    await addBook(thisBook);
+      bookList.add(thisBook);
+      await addBook(thisBook);
+    }
+    return apiRes.data;
   }
-  return apiRes.data;
+  on DioException catch(e){
+    throw Exception(e.message);
+  }
 }
 
 //Não dá pra colocar o future direto no builder da lista porque senão ele vai
@@ -76,31 +84,14 @@ class _BookLibraryState extends State<BookLibrary>
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 50.0, left: 10.0, right: 10.0),
-            child: FutureBuilder(
-              future: futureForListBuilder,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return TabBarView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    controller: tabController,
-                    children: [
-                      showBooks(),
-                      showFavorites(),
-                      showAvailableOffline(),
-                    ],
-                  );
-                } else {
-                  return const Center(
-                    child: SizedBox(
-                      height: 50,
-                      width: 50,
-                      child: CircularProgressIndicator(
-                        color: Colors.lightGreen,
-                      ),
-                    ),
-                  );
-                }
-              },
+            child: TabBarView(
+              physics: const NeverScrollableScrollPhysics(),
+              controller: tabController,
+              children: [
+                showBooks(),
+                showFavorites(),
+                showAvailableOffline(),
+              ],
             ),
           ),
           Row(
@@ -137,29 +128,51 @@ class _BookLibraryState extends State<BookLibrary>
 }
 
 showBooks() {
-  return Container(
-    padding: const EdgeInsets.only(bottom: 10.0),
-    child: GridView.builder(
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 150.0,
-        childAspectRatio: 1 / 2.25,
-      ),
-      shrinkWrap: true,
-      itemCount: bookList.length,
-      itemBuilder: (context, index) {
-        var tmp = bookList[index];
-        return BookCard(
-            icId: tmp.id,
-            icIndex: index,
-            icTitle: tmp.title,
-            icAuthor: tmp.author,
-            icCoverUrl: tmp.coverUrl,
-            icDownloadUrl: tmp.downloadUrl,
-            icIsFavorite: tmp.isFavorite,
-            icIsDownloaded: tmp.isDownloaded,
-            icInnerContext: context);
-      },
-    ),
+  return FutureBuilder(
+    future: futureForListBuilder,
+    builder: (context, snapshot) {
+      if (snapshot.hasData) {
+        return Container(
+          padding: const EdgeInsets.only(bottom: 10.0),
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 150.0,
+              childAspectRatio: 1 / 2.25,
+            ),
+            shrinkWrap: true,
+            itemCount: bookList.length,
+            itemBuilder: (context, index) {
+              var tmp = bookList[index];
+              return BookCard(
+                  icId: tmp.id,
+                  icIndex: index,
+                  icTitle: tmp.title,
+                  icAuthor: tmp.author,
+                  icCoverUrl: tmp.coverUrl,
+                  icDownloadUrl: tmp.downloadUrl,
+                  icIsFavorite: tmp.isFavorite,
+                  icIsDownloaded: tmp.isDownloaded,
+                  icInnerContext: context);
+            },
+          ),
+        );
+      } else if(snapshot.hasError){
+        return Center(
+          child: Text("${snapshot.error}"),
+        );
+      }
+      else {
+        return const Center(
+          child: SizedBox(
+            height: 50,
+            width: 50,
+            child: CircularProgressIndicator(
+              color: Colors.lightGreen,
+            ),
+          ),
+        );
+      }
+    },
   );
 }
 
